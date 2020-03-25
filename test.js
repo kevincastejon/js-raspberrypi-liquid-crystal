@@ -12,8 +12,6 @@ const messages = [
   ['4444444444444444', 'DDDDDDDDDDDDDDDD'],
 ];
 let currentMessage = 0;
-// lcd.clearAsync();
-// lcd.writeAsync(128, 0, (err) => console.log(err));
 function displayMessage() {
   if (firstLine !== lastFirstLine || secondLine !== lastSecondLine) {
     lastFirstLine = firstLine;

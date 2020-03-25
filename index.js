@@ -162,8 +162,8 @@ const LCD = class LCD {
       }
     });
 
-    // // Had to add this as it fixes a weird bug where the display was showing garbled text after a few minutes
-    // // Found this solution by accident though...
+    // Had to add this as it fixes a weird bug where the display was showing garbled text after a few minutes
+    // Found this solution by accident though...
     // this.i2c.sendByte(this.address, a | this.displayPorts.backlight | c, (err) => {
     //   if (err) {
     //     this.error = err;
