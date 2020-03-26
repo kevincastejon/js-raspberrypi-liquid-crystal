@@ -273,8 +273,8 @@ const LCD = class LCD {
   println(str, line) {
     if (typeof str === 'string') {
       // Set cursor to correct line.
-      if (line > 0 && line <= this.rows) {
-        this.write(this.LINEADDRESS[line - 1], this.displayPorts.CMD);
+      if (line < this.rows) {
+        this.write(this.LINEADDRESS[line], this.displayPorts.CMD);
       }
       this.print(str.substring(0, this.cols));
     }
@@ -283,9 +283,8 @@ const LCD = class LCD {
 
   printlnAsync(str, line, cb) {
     if (typeof str === 'string') {
-      // Set cursor to correct line.
-      if (line > 0 && line <= this.rows) {
-        this.writeAsync(this.LINEADDRESS[line - 1], this.displayPorts.CMD, (err1) => {
+      if (line < this.rows) {
+        this.writeAsync(this.LINEADDRESS[line], this.displayPorts.CMD, (err1) => {
           if (err1) {
             if (cb) {
               cb(err1);
@@ -295,6 +294,8 @@ const LCD = class LCD {
           }
         });
       }
+    } else {
+      throw new Error('string parameter must be a string')
     }
   }
 
