@@ -41,5 +41,3 @@ lcd.clearAsync(() => {
   displayMessage();
 });
 setInterval(() => onFrame(), 100);
-
-// lcd.printlnAsync('This is line 2.', 2, (err) => { console.log(err); });

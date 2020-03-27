@@ -25,5 +25,13 @@
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.1.0",
     "eslint-plugin-import": "^2.20.1"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kevincastejon/js-raspberrypi-i2c-lcd.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kevincastejon/js-raspberrypi-i2c-lcd/issues"
+  },
+  "homepage": "https://github.com/kevincastejon/js-raspberrypi-i2c-lcd#readme"
 }
