@@ -17,8 +17,8 @@ function displayMessage() {
     lastFirstLine = firstLine;
     lastSecondLine = secondLine;
     lcd.clearAsync(() => {
-      lcd.printlnAsync(firstLine, 1, () => {
-        lcd.printlnAsync(secondLine, 2, () => {
+      lcd.printlnAsync(firstLine, 0, () => {
+        lcd.printlnAsync(secondLine, 1, () => {
           displayMessage();
         });
       });
@@ -35,9 +35,17 @@ function onFrame() {
   firstLine = firstMsg;
   secondLine = secondMsg;
   currentMessage = currentMessage + 1 > messages.length - 1 ? 0 : currentMessage + 1;
+  console.log(firstLine, secondLine);
 }
 
-lcd.clearAsync(() => {
-  displayMessage();
+lcd.initAsync((err) => {
+  if (err) {
+    console.log(err);
+  } else {
+    console.log('inited');
+    lcd.clearAsync(() => {
+      displayMessage();
+    });
+    setInterval(() => onFrame(), 100);
+  }
 });
-setInterval(() => onFrame(), 100);
