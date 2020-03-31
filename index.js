@@ -152,8 +152,8 @@ const LCD = class LCD {
           }
           return;
         }
+        this._began = true;
         if (cb) {
-          this._began = true;
           cb();
         }
       }
@@ -199,7 +199,7 @@ const LCD = class LCD {
   }
 
   clearAsync(cb) {
-    if (this._began) {
+    if (!this._began) {
       cb(new Error('The LCD is not initialized! Call begin() before using any method!'));
       return;
     }
@@ -219,7 +219,7 @@ const LCD = class LCD {
   }
 
   homeAsync(cb) {
-    if (this._began) {
+    if (!this._began) {
       cb(new Error('The LCD is not initialized! Call begin() before using any method!'));
       return;
     }
@@ -241,7 +241,7 @@ const LCD = class LCD {
   }
 
   setCursorAsync(x, y, cb) {
-    if (this._began) {
+    if (!this._began) {
       cb(new Error('The LCD is not initialized! Call begin() before using any method!'));
       return;
     }
@@ -274,7 +274,7 @@ const LCD = class LCD {
   }
 
   async printAsync(_str, cb) {
-    if (this._began) {
+    if (!this._began) {
       cb(new Error('The LCD is not initialized! Call begin() before using any method!'));
       return;
     }
@@ -319,7 +319,7 @@ const LCD = class LCD {
   }
 
   printLineAsync(line, _str, cb) {
-    if (this._began) {
+    if (!this._began) {
       cb(new Error('The LCD is not initialized! Call begin() before using any method!'));
       return;
     }
@@ -352,7 +352,7 @@ const LCD = class LCD {
   }
 
   cursorAsync(cb) {
-    if (this._began) {
+    if (!this._began) {
       cb(new Error('The LCD is not initialized! Call begin() before using any method!'));
       return;
     }
@@ -375,7 +375,7 @@ const LCD = class LCD {
   }
 
   noCursorAsync(cb) {
-    if (this._began) {
+    if (!this._began) {
       cb(new Error('The LCD is not initialized! Call begin() before using any method!'));
       return;
     }
@@ -398,7 +398,7 @@ const LCD = class LCD {
   }
 
   blinkAsync(cb) {
-    if (this._began) {
+    if (!this._began) {
       cb(new Error('The LCD is not initialized! Call begin() before using any method!'));
       return;
     }
@@ -421,7 +421,7 @@ const LCD = class LCD {
   }
 
   noBlinkAsync(cb) {
-    if (this._began) {
+    if (!this._began) {
       cb(new Error('The LCD is not initialized! Call begin() before using any method!'));
       return;
     }
@@ -444,7 +444,7 @@ const LCD = class LCD {
   }
 
   displayAsync(cb) {
-    if (this._began) {
+    if (!this._began) {
       cb(new Error('The LCD is not initialized! Call begin() before using any method!'));
       return;
     }
@@ -467,7 +467,7 @@ const LCD = class LCD {
   }
 
   noDisplayAsync(cb) {
-    if (this._began) {
+    if (!this._began) {
       cb(new Error('The LCD is not initialized! Call begin() before using any method!'));
       return;
     }
@@ -487,7 +487,7 @@ const LCD = class LCD {
   }
 
   scrollDisplayLeftAsync(cb) {
-    if (this._began) {
+    if (!this._began) {
       cb(new Error('The LCD is not initialized! Call begin() before using any method!'));
       return;
     }
@@ -506,7 +506,7 @@ const LCD = class LCD {
   }
 
   scrollDisplayRightAsync(cb) {
-    if (this._began) {
+    if (!this._began) {
       cb(new Error('The LCD is not initialized! Call begin() before using any method!'));
       return;
     }
@@ -525,7 +525,7 @@ const LCD = class LCD {
   }
 
   leftToRightAsync(cb) {
-    if (this._began) {
+    if (!this._began) {
       cb(new Error('The LCD is not initialized! Call begin() before using any method!'));
       return;
     }
@@ -544,7 +544,7 @@ const LCD = class LCD {
   }
 
   rightToLeftAsync(cb) {
-    if (this._began) {
+    if (!this._began) {
       cb(new Error('The LCD is not initialized! Call begin() before using any method!'));
       return;
     }
@@ -576,7 +576,7 @@ const LCD = class LCD {
   }
 
   createCharAsync(ch, data, cb) {
-    if (this._began) {
+    if (!this._began) {
       cb(new Error('The LCD is not initialized! Call begin() before using any method!'));
       return;
     }
