@@ -1,7 +1,139 @@
-# raspberrypi-i2c-lcd
- Control i2c lcd screens with a Raspberry Pi using the i2c-bus module
+# raspberrypi-liquid-crystal
+ Control i2c lcd screens with a Raspberry Pi using the i2c-bus module with using PCF8574 I2C port expander
 
-## Original work
-https://github.com/craigmw/lcdi2c
+## Overview
+For use on a Raspberry Pi, raspberrypi-liquid-crystal is a node.js library for accessing LCD character displays using I2C via a PCF8574 port expander, typically found on inexpensive LCD I2C "backpacks".
 
-Added a callback argument on async methods, it will call the callback (if provided) with an error argument (if any error occured)
+raspberrypi-liquid-crystal supports 16x2 and 20x4 LCD character displays based on the Hitachi HD44780 LCD controller ( https://en.wikipedia.org/wiki/Hitachi_HD44780_LCD_controller ). raspberrypi-liquid-crystal uses the i2c-bus library ( https://github.com/fivdi/i2c-bus ) instead of the i2c library since the former supports more recent versions of node (e.g. 4.2.1).
+
+This work is based upon the following repository:
+
+https://github.com/wilberforce/lcd-pcf8574
+
+It follows the Arduino LiquidCrystal API, so the method names will be the same as:
+```
+https://www.arduino.cc/en/Reference/LiquidCrystal
+```
+(the following methods are missing: autoscroll(), noAutoscroll() and write())
+
+raspberrypi-liquid-crystal also provides a new method for displaying text on a specific line (for multiline screens) :
+```
+printLine ( line : int, text : string )
+```
+
+Each method has a synchronous version, an asynchronous version (Promise) and an error-first callback pattern version:
+```
+print ( text : string )                             - Promise
+printSync ( text : string )                         - Synchronous
+printAsync ( text : string, callback : function )   - Error-first callback (classic node)
+```
+
+## Installation
+
+```
+npm install raspberrypi-liquid-crystal
+```
+
+
+## Usage
+
+First, set up I2C on your Raspberry Pi. More information about this can be found here:
+
+https://learn.adafruit.com/adafruits-raspberry-pi-lesson-4-gpio-setup/configuring-i2c
+
+Now, check for the address of the LCD on the I2C bus:
+
+For a rev. 1 board (old), use the following:
+
+```
+sudo i2cdetect -y 0
+```
+
+For a rev. 2+ board (new), use the following:
+
+```
+sudo i2cdetect -y 1
+```
+
+This will print out the devices on the I2C bus, such as:
+
+```
+root@raspberrypi:/home/pi/raspberrypi-liquid-crystal# sudo i2cdetect -y 1
+    0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+00:          -- -- -- -- -- -- -- -- -- -- -- -- --
+10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+20: -- -- -- -- -- -- -- 27 -- -- -- -- -- -- -- --
+30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+70: -- -- -- -- -- -- -- --
+
+```
+
+Here, we see the device on address 0x27.
+
+To use raspberrypi-liquid-crystal, add the following code to your node.js application to import and instantiate the LCD object:
+
+```
+const LCD = require('raspberrypi-liquid-crystal');
+const lcd = new LCD( 1, 0x27, 16, 2 );
+
+```
+
+Note that this will set up an I2C LCD on I2C bus 1, address 0x27, with 16 columns and 2 rows.
+
+You can set the cursor position then print text on the screen with the following code:
+```
+lcd.clearSync();
+lcd.printSync( 'Hello' );
+lcd.setCursorSync(0, 1);
+lcd.printSync( 'World' );
+```
+
+
+To print out a string to the LCD panel using specified line numbers, see the following example code:
+
+```
+lcd.clearSync();
+lcd.printLineSync(0, 'This is line 1');
+lcd.printLineSync(1, 'This is line 2');
+```
+
+To create custom characters:
+
+```
+lcd.createCharSync( 0,[ 0x1B,0x15,0x0E,0x1B,0x15,0x1B,0x15,0x0E] ).createCharSync( 1,[ 0x0C,0x12,0x12,0x0C,0x00,0x00,0x00,0x00] );
+```
+
+More information about creating such custom characters can be found here:
+
+http://www.quinapalus.com/hd44780udg.html
+
+## Error Checking
+
+- Promise methods
+```
+lcd.begin()
+  .then(() => {})
+  .catch((e) => console.log(e))
+```
+- Synchronous methods
+```
+try {
+  lcd.beginSync();
+} catch (e) {
+  console.log(e);
+}
+```
+- Error-first callback methods
+```
+lcd.beginAsync((err) => {
+  if (err) {
+    console.log(err);
+  }
+});
+```
+
+## Examples
+See a lot of examples on the examples folder

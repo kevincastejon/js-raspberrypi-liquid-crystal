@@ -1,19 +1,12 @@
 /**
- * lcdi2c.js - Add I2C LCD character display using PCF8574 I2C port expander.
- * https://github.com/wilberforce/lcd-pcf8574 but replaced calls to i2c library with
- * calls to i2c-bus. Currently, only works in synchronous output mode. Asynch mode does not work.
- * LCD i2c interface via PCF8574P
- * http://dx.com/p/lcd1602-adapter-board-w-iic-i2c-interface-black-works-with-official-arduino-boards-216865
-
- * https://gist.github.com/chrisnew/6725633
- * http://www.espruino.com/HD44780
- * http://www.espruino.com/LCD1602
+ * raspberrypi-i2c-lcd - Control i2c lcd screens with a Raspberry Pi using the i2c-bus module with using PCF8574 I2C port expander
+ * https://github.com/kevincastejon/js-raspberrypi-i2c-lcd
  */
 const i2c = require('i2c-bus');
-// const sleep = require('sleep');
+const sleep = require('sleep');
 
 const LCD = class LCD {
-  constructor(device, address, cols, rows) {
+  constructor(busNumber, address, cols, rows) {
     this.displayPorts = {
       RS: 0x01,
       E: 0x04,
@@ -70,16 +63,18 @@ const LCD = class LCD {
     // Line addresses.
     this.LINEADDRESS = [0x80, 0xC0, 0x94, 0xD4];
 
-    this.device = device;
+    this.busNumber = busNumber;
     this.address = address;
     this.cols = cols;
     this.rows = rows;
     this.i2c = null;
+    this._blinking = false;
+    this._cursor = false;
   }
 
-  init() {
+  begin() {
     return (new Promise((res, rej) => {
-      this.initAsync((err) => {
+      this.beginAsync((err) => {
         if (err) {
           rej(err);
         } else {
@@ -89,38 +84,39 @@ const LCD = class LCD {
     }));
   }
 
-  initSync() {
-    this.i2c = i2c.openSync(this.device);
-    this.write4Sync(0x33, this.displayPorts.CMD); // initialization
-    this.write4Sync(0x32, this.displayPorts.CMD); // initialization
-    this.write4Sync(0x06, this.displayPorts.CMD); // initialization
-    this.write4Sync(0x28, this.displayPorts.CMD); // initialization
-    this.write4Sync(0x01, this.displayPorts.CMD); // initialization
-    this.write4Sync(this.FUNCTIONSET | this._4BITMODE | this._2LINE | this._5x10DOTS, this.displayPorts.CMD); // 4 bit - 2 line 5x7 matrix
-    this.writeSync(this.DISPLAYCONTROL | this.DISPLAYON, this.displayPorts.CMD); // turn cursor off 0x0E to enable cursor
-    this.writeSync(this.ENTRYMODESET | this.ENTRYLEFT, this.displayPorts.CMD); // shift cursor right
-    this.writeSync(this.CLEARDISPLAY, this.displayPorts.CMD); // LCD clear
-    this.writeSync(this.displayPorts.backlight, this.displayPorts.CHR); // Turn on backlight.
+  beginSync() {
+    this.i2c = i2c.openSync(this.busNumber);
+    this._write4Sync(0x33, this.displayPorts.CMD); // initialization
+    this._write4Sync(0x32, this.displayPorts.CMD); // initialization
+    this._write4Sync(0x06, this.displayPorts.CMD); // initialization
+    this._write4Sync(0x28, this.displayPorts.CMD); // initialization
+    this._write4Sync(0x01, this.displayPorts.CMD); // initialization
+    this._write4Sync(this.FUNCTIONSET | this._4BITMODE | this._2LINE | this._5x10DOTS, this.displayPorts.CMD); // 4 bit - 2 line 5x7 matrix
+    this._writeSync(this.DISPLAYCONTROL | this.DISPLAYON, this.displayPorts.CMD); // turn cursor off 0x0E to enable cursor
+    this._writeSync(this.ENTRYMODESET | this.ENTRYLEFT, this.displayPorts.CMD); // shift cursor right
+    this._writeSync(this.CLEARDISPLAY, this.displayPorts.CMD); // LCD clear
+    this._writeSync(this.displayPorts.backlight, this.displayPorts.CHR); // Turn on backlight.
+    return this;
   }
 
-  initAsync(cb) {
-    this.i2c = i2c.open(this.device, async (err) => {
+  beginAsync(cb) {
+    this.i2c = i2c.open(this.busNumber, async (err) => {
       if (err) {
         if (cb) {
           cb(err);
         }
       } else {
         try {
-          await this.write4(0x33, this.displayPorts.CMD); // initialization
-          await this.write4(0x32, this.displayPorts.CMD); // initialization
-          await this.write4(0x06, this.displayPorts.CMD); // initialization
-          await this.write4(0x28, this.displayPorts.CMD); // initialization
-          await this.write4(0x01, this.displayPorts.CMD); // initialization
-          await this.write4(this.FUNCTIONSET | this._4BITMODE | this._2LINE | this._5x10DOTS, this.displayPorts.CMD); // 4 bit - 2 line 5x7 matrix
-          await this.write(this.DISPLAYCONTROL | this.DISPLAYON, this.displayPorts.CMD); // turn cursor off 0x0E to enable cursor
-          await this.write(this.ENTRYMODESET | this.ENTRYLEFT, this.displayPorts.CMD); // shift cursor right
-          await this.write(this.CLEARDISPLAY, this.displayPorts.CMD); // LCD clear
-          await this.write(this.displayPorts.backlight, this.displayPorts.CHR); // Turn on backlight.
+          await this._write4(0x33, this.displayPorts.CMD); // initialization
+          await this._write4(0x32, this.displayPorts.CMD); // initialization
+          await this._write4(0x06, this.displayPorts.CMD); // initialization
+          await this._write4(0x28, this.displayPorts.CMD); // initialization
+          await this._write4(0x01, this.displayPorts.CMD); // initialization
+          await this._write4(this.FUNCTIONSET | this._4BITMODE | this._2LINE | this._5x10DOTS, this.displayPorts.CMD); // 4 bit - 2 line 5x7 matrix
+          await this._write(this.DISPLAYCONTROL | this.DISPLAYON, this.displayPorts.CMD); // turn cursor off 0x0E to enable cursor
+          await this._write(this.ENTRYMODESET | this.ENTRYLEFT, this.displayPorts.CMD); // shift cursor right
+          await this._write(this.CLEARDISPLAY, this.displayPorts.CMD); // LCD clear
+          await this._write(this.displayPorts.backlight, this.displayPorts.CHR); // Turn on backlight.
         } catch (e) {
           if (cb) {
             cb(e);
@@ -150,88 +146,49 @@ const LCD = class LCD {
     return this.i2c.closeSync();
   }
 
-  closeASync(cb) {
+  closeAsync(cb) {
     this.i2c.close(cb);
   }
 
-  write(x, c) {
-    return (new Promise((res, rej) => {
-      this.writeAsync(x, c, (err) => {
-        if (err) {
-          rej(err);
-        } else {
-          res();
-        }
-      });
-    }));
-  }
-
-  writeSync(x, c) {
-    this.write4Sync(x, c);
-    this.write4Sync(x << 4, c);
-    return this;
-  }
-
-
-  writeAsync(x, c, cb) {
-    this.write4(x, c)
-      .then(() => (this.write4(x << 4, c)))
-      .catch((e) => {
-        if (cb) {
-          cb(e);
-        }
-      })
-      .then(() => {
-        if (cb) {
-          cb();
-        }
-      })
-      .catch((e) => {
-        if (cb) {
-          cb(e);
-        }
-      });
-  }
-
-  writeBlock(x, c) {
-    return (new Promise((res, rej) => {
-      this.writeBlockAsync(x, c, (err) => {
-        if (err) {
-          rej(err);
-        } else {
-          res();
-        }
-      });
-    }));
-  }
-
-  writeBlockSync(x, c) {
-    this.write4Block(x, c);
-    return this.write4Block(x << 4, c);
-  }
-
-  writeBlockAsync(x, c, cb) {
-    this.write4Block(x, c)
-      .then(() => {
-        this.write4BlockAsync(x << 4, cb);
-      })
-      .catch((e) => {
-        if (cb) {
-          cb(e);
-        }
-      });
-  }
-
   clear() {
-    return this.write(this.CLEARDISPLAY, this.displayPorts.CMD);
+    return this._write(this.CLEARDISPLAY, this.displayPorts.CMD);
   }
 
   clearSync() {
-    return this.writeSync(this.CLEARDISPLAY, this.displayPorts.CMD);
+    return this._writeSync(this.CLEARDISPLAY, this.displayPorts.CMD);
   }
 
   clearAsync(cb) {
-    this.writeAsync(this.CLEARDISPLAY, this.displayPorts.CMD, cb);
+    this._writeAsync(this.CLEARDISPLAY, this.displayPorts.CMD, cb);
+  }
+
+  /** set cursor to 0,0 */
+  home() {
+    return this._write(this.SETDDRAMADDR | 0x00, this.displayPorts.CMD);
+  }
+
+  homeSync() {
+    return this._writeSync(this.SETDDRAMADDR | 0x00, this.displayPorts.CMD);
+  }
+
+  homeAsync(cb) {
+    this._writeAsync(this.SETDDRAMADDR | 0x00, this.displayPorts.CMD, cb);
+  }
+
+  /** set cursor pos, top left = 0,0 */
+  setCursor(x, y) {
+    const l = [0x00, 0x40, 0x14, 0x54];
+    return this._write(this.SETDDRAMADDR | (l[y] + x), this.displayPorts.CMD);
+  }
+
+  setCursorSync(x, y) {
+    const l = [0x00, 0x40, 0x14, 0x54];
+    return this._writeSync(this.SETDDRAMADDR | (l[y] + x), this.displayPorts.CMD);
+  }
+
+  setCursorAsync(x, y, cb) {
+    const l = [0x00, 0x40, 0x14, 0x54];
+    this._writeAsync(this.SETDDRAMADDR | (l[y] + x), this.displayPorts.CMD, cb);
   }
 
   print(_str) {
@@ -250,7 +207,7 @@ const LCD = class LCD {
     const str = _str.toString();
     for (let i = 0; i < str.length; i += 1) {
       const c = str[i].charCodeAt(0);
-      this.writeSync(c, this.displayPorts.CHR);
+      this._writeSync(c, this.displayPorts.CHR);
     }
     return this;
   }
@@ -260,7 +217,7 @@ const LCD = class LCD {
     for (let i = 0; i < str.length; i += 1) {
       const c = str[i].charCodeAt(0);
       try {
-        await this.writeChar(c);
+        await this._write(c, this.displayPorts.CHR);
       } catch (e) {
         if (cb) {
           cb(e);
@@ -273,21 +230,9 @@ const LCD = class LCD {
     }
   }
 
-  writeChar(c) {
-    return this.write(c, this.displayPorts.CHR);
-  }
-
-  writeCharSync(c) {
-    return this.writeSync(c, this.displayPorts.CHR);
-  }
-
-  writeCharAsync(c, cb) {
-    this.writeAsync(c, this.displayPorts.CHR, cb);
-  }
-
-  printBlock(_str) {
+  printLine(line, _str) {
     return (new Promise((res, rej) => {
-      this.printBlockAsync(_str, (err) => {
+      this.printLineAsync(line, _str, (err) => {
         if (err) {
           rej(err);
         } else {
@@ -297,57 +242,18 @@ const LCD = class LCD {
     }));
   }
 
-  printBlockSync(_str) {
-    const str = _str.toString();
-    for (let i = 0; i < str.length; i += 1) {
-      const c = str[i].charCodeAt(0);
-      this.writeBlockSync(c, this.displayPorts.CHR);
-    }
-    return this;
-  }
-
-  async printBlockAsync(_str, cb) {
-    const str = _str.toString();
-    for (let i = 0; i < str.length; i += 1) {
-      const c = str[i].charCodeAt(0);
-      try {
-        await this.writeBlock(c, this.displayPorts.CHR);
-      } catch (e) {
-        if (cb) {
-          cb(e);
-        }
-        return;
-      }
-    }
-    if (cb) {
-      cb();
-    }
-  }
-
-  println(_str, line) {
-    return (new Promise((res, rej) => {
-      this.printlnAsync(_str, line, (err) => {
-        if (err) {
-          rej(err);
-        } else {
-          res();
-        }
-      });
-    }));
-  }
-
-  printlnSync(_str, line) {
+  printLineSync(line, _str) {
     const str = _str.toString();
     if (line < this.rows) {
-      this.writeSync(this.LINEADDRESS[line], this.displayPorts.CMD);
+      this._writeSync(this.LINEADDRESS[line], this.displayPorts.CMD);
     }
     return this.printSync(str.substring(0, this.cols));
   }
 
-  printlnAsync(_str, line, cb) {
+  printLineAsync(line, _str, cb) {
     const str = _str.toString();
     if (line < this.rows) {
-      this.write(this.LINEADDRESS[line], this.displayPorts.CMD)
+      this._write(this.LINEADDRESS[line], this.displayPorts.CMD)
         .then(() => {
           this.printAsync(str.substring(0, this.cols), cb);
         })
@@ -359,206 +265,148 @@ const LCD = class LCD {
     }
   }
 
-  /** flashing block for the current cursor */
-  printlnBlock(_str, line) {
-    return (new Promise((res, rej) => {
-      this.printlnBlockAsync(_str, line, (err) => {
-        if (err) {
-          rej(err);
-        } else {
-          res();
-        }
-      });
-    }));
+  /** Turn block cursor on */
+  cursor() {
+    this._cursor = true;
+    return this._write(this.DISPLAYCONTROL | this.DISPLAYON | this.CURSORON | (this._blinking ? this.BLINKON : this.BLINKOFF), this.displayPorts.CMD);
   }
 
-  printlnBlockSync(_str, line) {
-    const str = _str.toString();
-    if (line > 0) {
-      this.writeSync(this.LINEADDRESS[line - 1], this.displayPorts.CMD);
-    }
-    return this.printBlockSync(str.substring(0, this.cols));
+  cursorSync() {
+    this._cursor = true;
+    return this._writeSync(this.DISPLAYCONTROL | this.DISPLAYON | this.CURSORON | (this._blinking ? this.BLINKON : this.BLINKOFF), this.displayPorts.CMD);
   }
 
-  printlnBlockAsync(_str, line, cb) {
-    const str = _str.toString();
-    if (line > 0) {
-      this.writeAsync(this.LINEADDRESS[line - 1], this.displayPorts.CMD, (e) => {
-        if (e) {
-          if (cb) {
-            cb();
-          }
-        } else {
-          this.printBlockAsync(str.substring(0, this.cols), cb);
-        }
-      });
-    }
-  }
-
-  cursorFull() {
-    return this.write(this.DISPLAYCONTROL | this.DISPLAYON | this.CURSORON | this.BLINKON, this.displayPorts.CMD);
-  }
-
-  cursorFullSync() {
-    return this.writeSync(this.DISPLAYCONTROL | this.DISPLAYON | this.CURSORON | this.BLINKON, this.displayPorts.CMD);
-  }
-
-  cursorFullAsync(cb) {
-    this.writeAsync(this.DISPLAYCONTROL | this.DISPLAYON | this.CURSORON | this.BLINKON, this.displayPorts.CMD, cb);
-  }
-
-  /** small line under the current cursor */
-  cursorUnder() {
-    return this.write(this.DISPLAYCONTROL | this.DISPLAYON | this.CURSORON | this.BLINKOFF, this.displayPorts.CMD);
-  }
-
-  cursorUnderSync() {
-    return this.writeSync(this.DISPLAYCONTROL | this.DISPLAYON | this.CURSORON | this.BLINKOFF, this.displayPorts.CMD);
-  }
-
-  cursorUnderAsync(cb) {
-    this.writeAsync(this.DISPLAYCONTROL | this.DISPLAYON | this.CURSORON | this.BLINKOFF, this.displayPorts.CMD, cb);
-  }
-
-  /** set cursor pos, top left = 0,0 */
-  setCursor(x, y) {
-    const l = [0x00, 0x40, 0x14, 0x54];
-    return this.write(this.SETDDRAMADDR | (l[y] + x), this.displayPorts.CMD);
-  }
-
-  setCursorSync(x, y) {
-    const l = [0x00, 0x40, 0x14, 0x54];
-    return this.writeSync(this.SETDDRAMADDR | (l[y] + x), this.displayPorts.CMD);
-  }
-
-  setCursorAsync(x, y, cb) {
-    const l = [0x00, 0x40, 0x14, 0x54];
-    this.writeAsync(this.SETDDRAMADDR | (l[y] + x), this.displayPorts.CMD, cb);
-  }
-
-  /** set cursor to 0,0 */
-  home() {
-    return this.write(this.SETDDRAMADDR | 0x00, this.displayPorts.CMD);
-  }
-
-  homeSync() {
-    return this.writeSync(this.SETDDRAMADDR | 0x00, this.displayPorts.CMD);
-  }
-
-  homeAsync(cb) {
-    this.writeAsync(this.SETDDRAMADDR | 0x00, this.displayPorts.CMD, cb);
-  }
-
-  /** Turn underline cursor off */
-  blinkOff() {
-    return this.write(this.DISPLAYCONTROL | this.DISPLAYON | this.CURSOROFF | this.BLINKOFF, this.displayPorts.CMD);
-  }
-
-  blinkOffSync() {
-    return this.writeSync(this.DISPLAYCONTROL | this.DISPLAYON | this.CURSOROFF | this.BLINKOFF, this.displayPorts.CMD);
-  }
-
-  blinkOffAsync(cb) {
-    this.writeAsync(this.DISPLAYCONTROL | this.DISPLAYON | this.CURSOROFF | this.BLINKOFF, this.displayPorts.CMD, cb);
-  }
-
-  /** Turn underline cursor on */
-  blinkOn() {
-    return this.write(this.DISPLAYCONTROL | this.DISPLAYON | this.CURSORON | this.BLINKOFF, this.displayPorts.CMD);
-  }
-
-  blinkOnSync() {
-    return this.writeSync(this.DISPLAYCONTROL | this.DISPLAYON | this.CURSORON | this.BLINKOFF, this.displayPorts.CMD);
-  }
-
-  blinkOnAsync(cb) {
-    this.writeAsync(this.DISPLAYCONTROL | this.DISPLAYON | this.CURSORON | this.BLINKOFF, this.displayPorts.CMD, cb);
+  cursorAsync(cb) {
+    this._cursor = true;
+    this._writeSync(this.DISPLAYCONTROL | this.DISPLAYON | this.CURSORON | (this._blinking ? this.BLINKON : this.BLINKOFF), this.displayPorts.CMD, cb);
   }
 
   /** Turn block cursor off */
-  cursorOff() {
-    return this.write(this.DISPLAYCONTROL | this.DISPLAYON | this.CURSOROFF | this.BLINKON, this.displayPorts.CMD);
+  noCursor() {
+    this._cursor = false;
+    return this._write(this.DISPLAYCONTROL | this.DISPLAYON | this.CURSOROFF | (this._blinking ? this.BLINKON : this.BLINKOFF), this.displayPorts.CMD);
   }
 
-  cursorOffSync() {
-    return this.writeSync(this.DISPLAYCONTROL | this.DISPLAYON | this.CURSOROFF | this.BLINKON, this.displayPorts.CMD);
+  noCursorSync() {
+    this._cursor = false;
+    return this._writeSync(this.DISPLAYCONTROL | this.DISPLAYON | this.CURSOROFF | (this._blinking ? this.BLINKON : this.BLINKOFF), this.displayPorts.CMD);
   }
 
-  cursorOffAsync(cb) {
-    this.writeAsync(this.DISPLAYCONTROL | this.DISPLAYON | this.CURSOROFF | this.BLINKON, this.displayPorts.CMD, cb);
+  noCursorAsync(cb) {
+    this._cursor = false;
+    this._writeAsync(this.DISPLAYCONTROL | this.DISPLAYON | this.CURSOROFF | (this._blinking ? this.BLINKON : this.BLINKOFF), this.displayPorts.CMD, cb);
   }
 
-  /** Turn block cursor on */
-  cursorOn() {
-    return this.write(this.DISPLAYCONTROL | this.DISPLAYON | this.CURSORON | this.BLINKON, this.displayPorts.CMD);
+  /** Turn underline cursor on */
+  blink() {
+    this._blinking = true;
+    return this._write(this.DISPLAYCONTROL | this.DISPLAYON | (this._cursor ? this.CURSORON : this.CURSOROFF) | this.BLINKON, this.displayPorts.CMD);
   }
 
-  cursorOnSync() {
-    return this.writeSync(this.DISPLAYCONTROL | this.DISPLAYON | this.CURSORON | this.BLINKON, this.displayPorts.CMD);
+  blinkSync() {
+    this._blinking = true;
+    return this._writeSync(this.DISPLAYCONTROL | this.DISPLAYON | (this._cursor ? this.CURSORON : this.CURSOROFF) | this.BLINKON, this.displayPorts.CMD);
   }
 
-  cursorOnAsync(cb) {
-    this.writeSync(this.DISPLAYCONTROL | this.DISPLAYON | this.CURSORON | this.BLINKON, this.displayPorts.CMD, cb);
+  blinkAsync(cb) {
+    this._blinking = true;
+    this._writeAsync(this.DISPLAYCONTROL | this.DISPLAYON | (this._cursor ? this.CURSORON : this.CURSOROFF) | this.BLINKON, this.displayPorts.CMD, cb);
   }
 
-  /** setBacklight */
-  setBacklight(val) {
-    if (val > 0) {
-      this.displayPorts.backlight = 0x08;
-    } else {
-      this.displayPorts.backlight = 0x00;
-    }
-    return this.write(this.DISPLAYCONTROL, this.displayPorts.CMD);
+  /** Turn underline cursor off */
+  noBlink() {
+    this._blinking = false;
+    return this._write(this.DISPLAYCONTROL | this.DISPLAYON | (this._cursor ? this.CURSORON : this.CURSOROFF) | this.BLINKOFF, this.displayPorts.CMD);
   }
 
-  setBacklightSync(val) {
-    if (val > 0) {
-      this.displayPorts.backlight = 0x08;
-    } else {
-      this.displayPorts.backlight = 0x00;
-    }
-    return this.writeSync(this.DISPLAYCONTROL, this.displayPorts.CMD);
+  noBlinkSync() {
+    this._blinking = false;
+    return this._writeSync(this.DISPLAYCONTROL | this.DISPLAYON | (this._cursor ? this.CURSORON : this.CURSOROFF) | this.BLINKOFF, this.displayPorts.CMD);
   }
 
-  setBacklightAsync(val, cb) {
-    if (val > 0) {
-      this.displayPorts.backlight = 0x08;
-    } else {
-      this.displayPorts.backlight = 0x00;
-    }
-    this.writeAsync(this.DISPLAYCONTROL, this.displayPorts.CMD, cb);
-  }
-
-  /** Turn display off */
-  off() {
-    this.displayPorts.backlight = 0x00;
-    return this.write(this.DISPLAYCONTROL | this.DISPLAYOFF, this.displayPorts.CMD);
-  }
-
-  offSync() {
-    this.displayPorts.backlight = 0x00;
-    return this.writeSync(this.DISPLAYCONTROL | this.DISPLAYOFF, this.displayPorts.CMD);
-  }
-
-  offAsync(cb) {
-    this.displayPorts.backlight = 0x00;
-    this.writeAsync(this.DISPLAYCONTROL | this.DISPLAYOFF, this.displayPorts.CMD, cb);
+  noBlinkAsync(cb) {
+    this._blinking = false;
+    this._writeAsync(this.DISPLAYCONTROL | this.DISPLAYON | (this._cursor ? this.CURSORON : this.CURSOROFF) | this.BLINKOFF, this.displayPorts.CMD, cb);
   }
 
   /** Turn display on */
-  on() {
+  display() {
     this.displayPorts.backlight = 0x08;
-    return this.write(this.DISPLAYCONTROL | this.DISPLAYON, this.displayPorts.CMD);
+    return this._write(this.DISPLAYCONTROL | this.DISPLAYON, this.displayPorts.CMD);
   }
 
-  onSync() {
+  displaySync() {
     this.displayPorts.backlight = 0x08;
-    return this.writeSync(this.DISPLAYCONTROL | this.DISPLAYON, this.displayPorts.CMD);
+    return this._writeSync(this.DISPLAYCONTROL | this.DISPLAYON, this.displayPorts.CMD);
   }
 
-  onAsync(cb) {
+  displayAsync(cb) {
     this.displayPorts.backlight = 0x08;
-    this.writeAsync(this.DISPLAYCONTROL | this.DISPLAYON, this.displayPorts.CMD, cb);
+    this._writeAsync(this.DISPLAYCONTROL | this.DISPLAYON, this.displayPorts.CMD, cb);
+  }
+
+  /** Turn display off */
+  noDisplay() {
+    this.displayPorts.backlight = 0x00;
+    return this._write(this.DISPLAYCONTROL | this.DISPLAYOFF, this.displayPorts.CMD);
+  }
+
+  noDisplaySync() {
+    this.displayPorts.backlight = 0x00;
+    return this._writeSync(this.DISPLAYCONTROL | this.DISPLAYOFF, this.displayPorts.CMD);
+  }
+
+  noDisplayAsync(cb) {
+    this.displayPorts.backlight = 0x00;
+    this._writeAsync(this.DISPLAYCONTROL | this.DISPLAYOFF, this.displayPorts.CMD, cb);
+  }
+
+  scrollDisplayLeft() {
+    return this._write(this.CURSORSHIFT | this.DISPLAYMOVE | this.MOVELEFT);
+  }
+
+  scrollDisplayLeftSync() {
+    return this._writeSync(this.CURSORSHIFT | this.DISPLAYMOVE | this.MOVELEFT);
+  }
+
+  scrollDisplayLeftAsync(cb) {
+    this._writeAsync(this.CURSORSHIFT | this.DISPLAYMOVE | this.MOVELEFT, cb);
+  }
+
+  scrollDisplayRight() {
+    return this._write(this.CURSORSHIFT | this.DISPLAYMOVE | this.MOVERIGHT);
+  }
+
+  scrollDisplayRightSync() {
+    return this._writeSync(this.CURSORSHIFT | this.DISPLAYMOVE | this.MOVERIGHT);
+  }
+
+  scrollDisplayRightAsync(cb) {
+    this._writeAsync(this.CURSORSHIFT | this.DISPLAYMOVE | this.MOVERIGHT, cb);
+  }
+
+  leftToRight() {
+    return this._write(this.ENTRYMODESET | this.ENTRYLEFT);
+  }
+
+  leftToRightSync() {
+    return this._writeSync(this.ENTRYMODESET | this.ENTRYLEFT);
+  }
+
+  leftToRightAsync(cb) {
+    this._writeAsync(this.ENTRYMODESET | this.ENTRYLEFT, cb);
+  }
+
+  rightToLeft() {
+    return this._write(this.ENTRYMODESET | this.ENTRYRIGHT);
+  }
+
+  rightToLeftSync() {
+    return this._writeSync(this.ENTRYMODESET | this.ENTRYRIGHT);
+  }
+
+  rightToLeftAsync(cb) {
+    this._writeAsync(this.ENTRYMODESET | this.ENTRYRIGHT, cb);
   }
 
   /** set special character 0..7, data is an array(8) of bytes, and then return to home addr */
@@ -575,19 +423,19 @@ const LCD = class LCD {
   }
 
   createCharSync(ch, data) {
-    this.writeSync(this.SETCGRAMADDR | ((ch & 7) << 3), this.displayPorts.CMD);
+    this._writeSync(this.SETCGRAMADDR | ((ch & 7) << 3), this.displayPorts.CMD);
     for (let i = 0; i < 8; i += 1) {
-      this.writeSync(data[i], this.displayPorts.CHR);
+      this._writeSync(data[i], this.displayPorts.CHR);
     }
-    return this.writeSync(this.SETDDRAMADDR, this.displayPorts.CMD);
+    return this._writeSync(this.SETDDRAMADDR, this.displayPorts.CMD);
   }
 
   createCharAsync(ch, data, cb) {
-    this.write(this.SETCGRAMADDR | ((ch & 7) << 3), this.displayPorts.CMD)
+    this._write(this.SETCGRAMADDR | ((ch & 7) << 3), this.displayPorts.CMD)
       .then(async () => {
         for (let i = 0; i < 8; i += 1) {
           try {
-            await this.write(data[i], this.displayPorts.CHR);
+            await this._write(data[i], this.displayPorts.CHR);
           } catch (e) {
             if (cb) {
               cb(e);
@@ -595,7 +443,7 @@ const LCD = class LCD {
             return;
           }
         }
-        this.write(this.SETDDRAMADDR, this.displayPorts.CMD)
+        this._write(this.SETDDRAMADDR, this.displayPorts.CMD)
           .then(() => {
             if (cb) {
               cb();
@@ -613,9 +461,9 @@ const LCD = class LCD {
       });
   }
 
-  write4(x, c) {
+  _write(x, c) {
     return (new Promise((res, rej) => {
-      this.write4Async(x, c, (err) => {
+      this._writeAsync(x, c, (err) => {
         if (err) {
           rej(err);
         } else {
@@ -625,24 +473,63 @@ const LCD = class LCD {
     }));
   }
 
-  write4Sync(x, c) {
-    const a = (x & 0xF0); // Use upper 4 bit nibble
-    this.i2c.sendByteSync(this.address, a | this.displayPorts.backlight | c);
-    this.i2c.sendByteSync(this.address, a | this.displayPorts.E | this.displayPorts.backlight | c);
-    this.i2c.sendByteSync(this.address, a | this.displayPorts.backlight | c);
-    return (this);
+  _writeSync(x, c) {
+    this._write4Sync(x, c);
+    this._write4Sync(x << 4, c);
+    return this;
   }
 
-  write4Async(x, c, cb) {
-    const a = (x & 0xF0); // Use upper 4 bit nibble
-    this.sendByte(a | this.displayPorts.backlight | c)
-      .then(() => (this.sendByte(a | this.displayPorts.E | this.displayPorts.backlight | c)))
+  _writeAsync(x, c, cb) {
+    this._write4(x, c)
+      .then(() => (this._write4(x << 4, c)))
       .catch((e) => {
         if (cb) {
           cb(e);
         }
       })
-      .then(() => (this.sendByte(a | this.displayPorts.backlight | c)))
+      .then(() => {
+        if (cb) {
+          cb();
+        }
+      })
+      .catch((e) => {
+        if (cb) {
+          cb(e);
+        }
+      });
+  }
+
+  _write4(x, c) {
+    return (new Promise((res, rej) => {
+      this._write4Async(x, c, (err) => {
+        if (err) {
+          rej(err);
+        } else {
+          res();
+        }
+      });
+    }));
+  }
+
+  _write4Sync(x, c) {
+    const a = (x & 0xF0); // Use upper 4 bit nibble
+    this.i2c.sendByteSync(this.address, a | this.displayPorts.backlight | c);
+    this.i2c.sendByteSync(this.address, a | this.displayPorts.E | this.displayPorts.backlight | c);
+    this.i2c.sendByteSync(this.address, a | this.displayPorts.backlight | c);
+    sleep.usleep(2000);
+    return (this);
+  }
+
+  _write4Async(x, c, cb) {
+    const a = (x & 0xF0); // Use upper 4 bit nibble
+    this._sendByte(a | this.displayPorts.backlight | c)
+      .then(() => (this._sendByte(a | this.displayPorts.E | this.displayPorts.backlight | c)))
+      .catch((e) => {
+        if (cb) {
+          cb(e);
+        }
+      })
+      .then(() => (this._sendByte(a | this.displayPorts.backlight | c)))
       .catch((e) => {
         if (cb) {
           cb(e);
@@ -659,7 +546,7 @@ const LCD = class LCD {
       });
   }
 
-  sendByte(x) {
+  _sendByte(x) {
     return (new Promise((res, rej) => {
       this.i2c.sendByte(this.address, x, (err) => {
         if (err) {
