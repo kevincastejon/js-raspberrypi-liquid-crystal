@@ -78,15 +78,15 @@ const LCD = class LCD {
   }
 
   get address() {
-    return this._busNumber;
+    return this._address;
   }
 
   get cols() {
-    return this._busNumber;
+    return this._cols;
   }
 
   get rows() {
-    return this._busNumber;
+    return this._rows;
   }
 
   get began() {
