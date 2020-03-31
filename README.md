@@ -11,9 +11,9 @@ This work is based upon the following repository:
 https://github.com/wilberforce/lcd-pcf8574
 
 It follows the Arduino LiquidCrystal API, so the method names will be the same as:
-```
+
 https://www.arduino.cc/en/Reference/LiquidCrystal
-```
+
 (the following methods are missing: autoscroll(), noAutoscroll() and write())
 
 raspberrypi-liquid-crystal also provides a new method for displaying text on a specific line (for multiline screens) :
@@ -21,7 +21,8 @@ raspberrypi-liquid-crystal also provides a new method for displaying text on a s
 printLine ( line : int, text : string )
 ```
 
-Each method has a synchronous version, an asynchronous version (Promise) and an error-first callback pattern version:
+Each method has a synchronous version, an asynchronous version (Promise) and an error-first callback pattern version.
+Example with the print() method (applies to all methods):
 ```
 print ( text : string )                             - Promise
 printSync ( text : string )                         - Synchronous
@@ -139,19 +140,19 @@ lcd.beginAsync((err) => {
 See a lot of examples on the examples folder
 
 ## API
-- begin () - Initializes the interface to the LCD screen. Has to be called before any command.
-- clear () - Clears the LCD screen and positions the cursor in the upper-left corner.
-- home () - Positions the cursor in the upper-left of the LCD.
-- setCursor ( col : int, row : int ) - Positions the LCD cursor.
-- print ( text : string ) - Prints text to the LCD.
-- cursor () - Displays the LCD cursor (underscore line).
-- noCursor () - Hides the LCD cursor.
-- blink () - Displays the blinking LCD cursor (white block).
-- noBlink () - Turns off the blinking LCD cursor.
-- display () - Turns on the LCD display.
-- noDisplay () - Turns off the LCD display.
-- scrollDisplayLeft () - Scrolls the contents of the display (text and cursor) one space to the left.
-- scrollDisplayRight () - Scrolls the contents of the display (text and cursor) one space to the right.
-- leftToRight () - Sets the direction for text written to the LCD to left-to-right, the default.
-- rightToLeft () - Sets the direction for text written to the LCD to right-to-left.
-- createChar ( id : int, dots : array of int ) - Create a custom character (glyph) for use on the LCD. Up to eight characters of 5x8 pixels are supported (id 0 to 7). The appearance of each custom character is specified by an array of eight bytes, one for each row. The five least significant bits of each byte determine the pixels in that row. To display a custom character on the screen, use print(String.fromCharCode(id))
+- **begin** () - Initializes the interface to the LCD screen. Has to be called before any command.
+- **clear** () - Clears the LCD screen and positions the cursor in the upper-left corner.
+- **home** () - Positions the cursor in the upper-left of the LCD.
+- **setCursor** ( col : int, row : int ) - Positions the LCD cursor.
+- **print** ( text : string ) - Prints text to the LCD.
+- **cursor** () - Displays the LCD cursor (underscore line).
+- **noCursor** () - Hides the LCD cursor.
+- **blink** () - Displays the blinking LCD cursor (white block).
+- **noBlink** () - Turns off the blinking LCD cursor.
+- **display** () - Turns on the LCD display.
+- **noDisplay** () - Turns off the LCD display.
+- **scrollDisplayLeft** () - Scrolls the contents of the display (text and cursor) one space to the left.
+- **scrollDisplayRight** () - Scrolls the contents of the display (text and cursor) one space to the right.
+- **leftToRight** () - Sets the direction for text written to the LCD to left-to-right, the default.
+- **rightToLeft** () - Sets the direction for text written to the LCD to right-to-left.
+- **createChar** ( id : int, dots : array of int ) - Create a custom character (glyph) for use on the LCD. Up to eight characters of 5x8 pixels are supported (id 0 to 7). The appearance of each custom character is specified by an array of eight bytes, one for each row. The five least significant bits of each byte determine the pixels in that row. To display a custom character on the screen, use print(String.fromCharCode(id))
