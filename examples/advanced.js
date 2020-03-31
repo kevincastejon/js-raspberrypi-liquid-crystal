@@ -73,18 +73,18 @@ async function advancedTest() {
   await lcd.createChar(1, [0x2, 0x12, 0x2, 0x2, 0x2, 0x2, 0x12, 0x2]);
   await lcd.createChar(2, [0x2, 0x11, 0x1, 0x1, 0x1, 0x1, 0x11, 0x2]);
   await lcd.setCursor(7, 0);
-  await lcd.print(String.fromCharCode(0));
+  await lcd.print(LCD.getChar(0));
   await wait(200);
   await lcd.setCursor(8, 0);
-  await lcd.print(String.fromCharCode(0));
+  await lcd.print(LCD.getChar(0));
   await wait(200);
   await lcd.setCursor(9, 0);
-  await lcd.print(String.fromCharCode(0));
+  await lcd.print(LCD.getChar(0));
   await wait(200);
   await lcd.setCursor(8, 1);
-  await lcd.print(String.fromCharCode(1));
+  await lcd.print(LCD.getChar(1));
   await wait(1000);
   await lcd.setCursor(8, 1);
-  await lcd.print(String.fromCharCode(2));
+  await lcd.print(LCD.getChar(2));
 }
 advancedTest();

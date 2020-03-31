@@ -610,6 +610,10 @@ const LCD = class LCD {
       });
   }
 
+  static getChar(charId) {
+    return (String.fromCharCode(charId));
+  }
+
   _write(x, c) {
     return (new Promise((res, rej) => {
       this._writeAsync(x, c, (err) => {
