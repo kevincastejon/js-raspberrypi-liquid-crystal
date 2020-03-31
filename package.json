@@ -1,6 +1,6 @@
 {
   "name": "raspberrypi-liquid-crystal",
-  "version": "1.11.0",
+  "version": "1.12.0",
   "description": "Control i2c lcd screens with a Raspberry Pi using the i2c-bus module",
   "main": "index.js",
   "scripts": {
