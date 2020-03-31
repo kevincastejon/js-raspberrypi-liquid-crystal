@@ -22,6 +22,7 @@ printLine ( line : int, text : string )
 ```
 
 Each method has a synchronous version, an asynchronous version (Promise) and an error-first callback pattern version.
+
 Example with the print() method (applies to all methods):
 ```
 print ( text : string )                             - Promise
@@ -138,6 +139,7 @@ lcd.beginAsync((err) => {
 
 ## Examples
 See a lot of examples on the examples folder
+
 Basic synchronous example:
 ```
 // Import the module
