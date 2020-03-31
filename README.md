@@ -1,5 +1,5 @@
 # raspberrypi-liquid-crystal
- Control i2c lcd screens with a Raspberry Pi using the i2c-bus module with using PCF8574 I2C port expander
+ Control i2c lcd screens with a Raspberry Pi module with using PCF8574 I2C port expander
 
 ## Overview
 For use on a Raspberry Pi, raspberrypi-liquid-crystal is a node.js library for accessing LCD character displays using I2C via a PCF8574 port expander, typically found on inexpensive LCD I2C "backpacks".
