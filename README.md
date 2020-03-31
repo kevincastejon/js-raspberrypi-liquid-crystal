@@ -21,7 +21,7 @@ raspberrypi-liquid-crystal also provides a new method for displaying text on a s
 printLine ( line : int, text : string )
 ```
 
-Each method has a synchronous version, an asynchronous version (Promise) and an error-first callback pattern version.
+Each method has a synchronous version, an asynchronous version (Promise) and an error-first callback pattern version. (Except getChar() which returns directly a previously created custom character)
 
 Example with the print() method (applies to all methods):
 ```
@@ -180,5 +180,5 @@ lcd.printLineSync(1, 'world!');
 - **scrollDisplayRight ()** - Scrolls the contents of the display (text and cursor) one space to the right.
 - **leftToRight ()** - Sets the direction for text written to the LCD to left-to-right, the default.
 - **rightToLeft ()** - Sets the direction for text written to the LCD to right-to-left.
-- **createChar ( id : int, dots : array of int )** - Create a custom character (glyph) for use on the LCD. Up to eight characters of 5x8 pixels are supported (id 0 to 7). The appearance of each custom character is specified by an array of eight bytes, one for each row. The five least significant bits of each byte determine the pixels in that row. To display a custom character on the screen, use print(LCD.getChar(id)).
-- **getChar ( id : int )** - Return a custom character previously created at specified id (0 to 7).
+- **createChar ( id : int, dots : array of int )** - Creates a custom character (glyph) for use on the LCD. Up to eight characters of 5x8 pixels are supported (id 0 to 7). The appearance of each custom character is specified by an array of eight bytes, one for each row. The five least significant bits of each byte determine the pixels in that row. To display a custom character on the screen, use print(LCD.getChar(id)).
+- **getChar ( id : int )** - Returns a custom character previously created at specified id (0 to 7). No async version for this method!
