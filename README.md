@@ -138,8 +138,30 @@ lcd.beginAsync((err) => {
 
 ## Examples
 See a lot of examples on the examples folder
+Basic synchronous example:
+```
+// Import the module
+const LCD = require('raspberrypi-liquid-crystal');
+
+// Instantiate the LCD object on bus 1 address 3f with 16 chars width and 2 lines
+const lcd = new LCD(1, 0x3f, 16, 2);
+// Init the lcd (must be done before calling any other methods)
+lcd.beginSync();
+// Clear any previously displayed content
+lcd.clearSync();
+// Display text multiline
+lcd.printLineSync(0, 'hello');
+lcd.printLineSync(1, 'world!');
+```
 
 ## API
+### Properties (read-only)
+- **busNumber** : int - The bus number declared when instantiating the LCD object.
+- **address** : int - The i2c address declared when instantiating the LCD object.
+- **cols** : int - The number of characters width declared when instantiating the LCD object.
+- **rows** : int - The number of lines declared when instantiating the LCD object.
+- **began** : boolean - True if the LCD has been initialized, false if not.
+### Methods
 - **begin** () - Initializes the interface to the LCD screen. Has to be called before any command.
 - **clear** () - Clears the LCD screen and positions the cursor in the upper-left corner.
 - **home** () - Positions the cursor in the upper-left of the LCD.
