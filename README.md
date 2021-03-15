@@ -170,6 +170,7 @@ lcd.printLineSync(1, 'world!');
 - **home ()** - Positions the cursor in the upper-left of the LCD.
 - **setCursor** ( col : int, row : int ) - Positions the LCD cursor.
 - **print ( text : string )** - Prints text to the LCD.
+- **printLine ( line : int, text : string )** - Prints text to the LCD on the specified line.
 - **cursor ()** - Displays the LCD cursor (underscore line).
 - **noCursor ()** - Hides the LCD cursor.
 - **blink ()** - Displays the blinking LCD cursor (white block).
