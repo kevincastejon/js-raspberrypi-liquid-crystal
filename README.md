@@ -168,7 +168,7 @@ lcd.printLineSync(1, 'world!');
 - **begin ()** - Initializes the interface to the LCD screen. Has to be called before any command.
 - **clear ()** - Clears the LCD screen and positions the cursor in the upper-left corner.
 - **home ()** - Positions the cursor in the upper-left of the LCD.
-- **setCursor** ( col : int, row : int ) - Positions the LCD cursor.
+- **setCursor ( col : int, row : int )** - Positions the LCD cursor.
 - **print ( text : string )** - Prints text to the LCD.
 - **printLine ( line : int, text : string )** - Prints text to the LCD on the specified line.
 - **cursor ()** - Displays the LCD cursor (underscore line).
