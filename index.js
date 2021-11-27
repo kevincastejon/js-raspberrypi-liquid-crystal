@@ -701,6 +701,7 @@ const LCD = class LCD {
 
   _sendByte(x) {
     return (new Promise((res, rej) => {
+      sleep.usleep(2000);
       this._i2c.sendByte(this._address, x, (err) => {
         if (err) {
           rej(err);
