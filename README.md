@@ -80,7 +80,7 @@ To use raspberrypi-liquid-crystal, add the following code to your node.js applic
 ```
 const LCD = require('raspberrypi-liquid-crystal');
 const lcd = new LCD( 1, 0x27, 16, 2 );
-
+lcd.beginSync();
 ```
 
 Note that this will set up an I2C LCD on I2C bus 1, address 0x27, with 16 columns and 2 rows.
