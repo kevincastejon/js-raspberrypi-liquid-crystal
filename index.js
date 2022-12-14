@@ -166,6 +166,7 @@ const LCD = class LCD {
         if (err) {
           rej(err);
         } else {
+          this._began = false;
           res();
         }
       });
@@ -176,6 +177,7 @@ const LCD = class LCD {
     if (!this._began) {
       throw new Error('The LCD is not initialized! Call begin() before using any method!');
     }
+    this._began = false;
     return this._i2c.closeSync();
   }
 
@@ -184,7 +186,10 @@ const LCD = class LCD {
       cb(new Error('The LCD is not initialized! Call begin() before using any method!'));
       return;
     }
-    this._i2c.close(cb);
+    this._i2c.close(err => {
+      if(!err) this._began = false;
+      cb(err)
+    });
   }
 
   clear() {
