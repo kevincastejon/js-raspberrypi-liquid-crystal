@@ -6,7 +6,7 @@ const i2c = require('i2c-bus');
 const sleep = require('sleep');
 
 const LCD = class LCD {
-  constructor(busNumber, address, cols, rows) {
+  constructor(busNumber, address, cols, rows, linesAddresses = [0x80, 0xC0, 0x94, 0xD4]) {
     this.displayPorts = {
       RS: 0x01,
       E: 0x04,
@@ -60,9 +60,9 @@ const LCD = class LCD {
     this._5x10DOTS = 0x04;
     this._5x8DOTS = 0x00;
 
-    // Line addresses.
-    this._LINEADDRESS = [0x80, 0xC0, 0x94, 0xD4];
-
+    // Line addresses
+    this._LINEADDRESS = linesAddresses;
+    
     this._busNumber = busNumber;
     this._address = address;
     this._cols = cols;
