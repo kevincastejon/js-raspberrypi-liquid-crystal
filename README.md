@@ -157,7 +157,7 @@ lcd.printLineSync(1, 'world!');
 ```
 
 ## API
-- **constructor ( bus : int, address : int, width : int, height : int )**
+- **constructor ( bus : int, address : int, width : int, height : int , \[linesAddresses : array of hex = \[0x80, 0xC0, 0x94, 0xD4\]\])**
 ### Properties (read-only)
 - **busNumber** : int - The bus number declared when instantiating the LCD object.
 - **address** : int - The i2c address declared when instantiating the LCD object.
